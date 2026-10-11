@@ -7,597 +7,251 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="manifest.json" />
     <title>🏃 Run Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            background: #0b0e14;
-            color: #e8edf5;
-            padding: 20px;
-            min-height: 100vh;
+            background: #0b0e14; color: #e8edf5; padding: 20px; min-height: 100vh;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a1f2a;
-            border-radius: 6px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #3b4a5e;
-            border-radius: 6px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #5a6f8a;
-        }
-        .dashboard {
-            max-width: 1360px;
-            margin: 0 auto;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1f2a; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background: #3b4a5e; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5a6f8a; }
+        .dashboard { max-width: 1360px; margin: 0 auto; }
 
         .header {
             background: linear-gradient(135deg, #141b26 0%, #1f2a3a 100%);
-            border-radius: 20px;
-            padding: 24px 28px;
-            margin-bottom: 24px;
-            border: 1px solid #2a3548;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            border-radius: 20px; padding: 24px 28px; margin-bottom: 24px;
+            border: 1px solid #2a3548; display: flex; flex-wrap: wrap;
+            align-items: center; justify-content: space-between; gap: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .header-left .icon {
-            font-size: 2.2rem;
-            line-height: 1;
-        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-left .icon { font-size: 2.2rem; line-height: 1; }
         .header-left h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
+            font-size: 1.6rem; font-weight: 700;
             background: linear-gradient(135deg, #f0f4ff, #8ab4f8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .header-left .sub {
-            font-size: 0.8rem;
-            color: #7a8aa3;
-        }
-        .header-stats {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-        .header-stats .stat {
-            text-align: center;
-        }
-        .header-stats .stat .value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #e8edf5;
-        }
+        .header-left .sub { font-size: 0.8rem; color: #7a8aa3; }
+        .header-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .header-stats .stat { text-align: center; }
+        .header-stats .stat .value { font-size: 1.3rem; font-weight: 700; color: #e8edf5; }
         .header-stats .stat .label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #7a8aa3;
-            margin-top: 2px;
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;
+            color: #7a8aa3; margin-top: 2px;
         }
-        .header-stats .stat .value.accent {
-            color: #6fc3ff;
-        }
-        .header-stats .stat .value.green {
-            color: #5cd6a2;
-        }
-        .header-stats .stat .value.orange {
-            color: #f5b06b;
-        }
-        .header-stats .stat .value.pink {
-            color: #f58b9f;
-        }
+        .header-stats .stat .value.accent { color: #6fc3ff; }
+        .header-stats .stat .value.green { color: #5cd6a2; }
+        .header-stats .stat .value.orange { color: #f5b06b; }
+        .header-stats .stat .value.pink { color: #f58b9f; }
 
         .add-form {
-            background: #141b26;
-            border: 1px solid #232d3e;
-            border-radius: 14px;
-            padding: 18px 22px;
-            margin-bottom: 24px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 14px;
+            background: #141b26; border: 1px solid #232d3e; border-radius: 14px;
+            padding: 18px 22px; margin-bottom: 24px; display: flex; flex-wrap: wrap;
+            align-items: flex-end; gap: 14px;
         }
-        .add-form .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .add-form .field { display: flex; flex-direction: column; gap: 4px; }
         .add-form .field label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #7a8aa3;
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.4px; color: #7a8aa3;
         }
         .add-form .field input {
-            background: #0f151f;
-            border: 1px solid #2a3548;
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: #e8edf5;
-            font-size: 0.9rem;
-            width: 140px;
+            background: #0f151f; border: 1px solid #2a3548; border-radius: 8px;
+            padding: 8px 12px; color: #e8edf5; font-size: 0.9rem; width: 140px;
             transition: border-color 0.2s;
         }
-        .add-form .field input:focus {
-            outline: none;
-            border-color: #5a7a9a;
-        }
-        .add-form .field input[type="date"] {
-            width: 160px;
-        }
+        .add-form .field input:focus { outline: none; border-color: #5a7a9a; }
+        .add-form .field input[type="date"] { width: 160px; }
         .add-form .btn {
-            background: #2a3a52;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 24px;
-            color: #f0f4ff;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            height: 42px;
-            align-self: flex-end;
+            background: #2a3a52; border: none; border-radius: 8px; padding: 10px 24px;
+            color: #f0f4ff; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.2s; height: 42px; align-self: flex-end;
         }
-        .add-form .btn:hover {
-            background: #3a5a7a;
-        }
-        .add-form .btn.danger {
-            background: #4a2a2a;
-        }
-        .add-form .btn.danger:hover {
-            background: #6a3a3a;
-        }
-        .add-form .btn.secondary {
-            background: #1a2a3a;
-        }
-        .add-form .btn.secondary:hover {
-            background: #2a3a52;
-        }
-        .add-form .btn.excel {
-            background: #1a4a2a;
-        }
-        .add-form .btn.excel:hover {
-            background: #2a6a3a;
-        }
+        .add-form .btn:hover { background: #3a5a7a; }
+        .add-form .btn.danger { background: #4a2a2a; }
+        .add-form .btn.danger:hover { background: #6a3a3a; }
+        .add-form .btn.secondary { background: #1a2a3a; }
+        .add-form .btn.secondary:hover { background: #2a3a52; }
+        .add-form .btn.excel { background: #1a4a2a; }
+        .add-form .btn.excel:hover { background: #2a6a3a; }
 
         .goal-control {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #0f151f;
-            padding: 6px 14px 6px 18px;
-            border-radius: 10px;
-            border: 1px solid #2a3548;
-            height: 42px;
+            display: flex; align-items: center; gap: 12px; background: #0f151f;
+            padding: 6px 14px 6px 18px; border-radius: 10px;
+            border: 1px solid #2a3548; height: 42px;
         }
         .goal-control label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #7a8aa3;
-            white-space: nowrap;
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.4px;
+            color: #7a8aa3; white-space: nowrap;
         }
         .goal-control input {
-            background: #1a212e;
-            border: 1px solid #2a3548;
-            border-radius: 6px;
-            padding: 4px 8px;
-            color: #e8edf5;
-            font-size: 0.9rem;
-            width: 70px;
-            text-align: center;
+            background: #1a212e; border: 1px solid #2a3548; border-radius: 6px;
+            padding: 4px 8px; color: #e8edf5; font-size: 0.9rem; width: 70px; text-align: center;
         }
-        .goal-control input:focus {
-            outline: none;
-            border-color: #5a7a9a;
-        }
-        .goal-control .unit {
-            color: #7a8aa3;
-            font-size: 0.75rem;
-        }
+        .goal-control input:focus { outline: none; border-color: #5a7a9a; }
+        .goal-control .unit { color: #7a8aa3; font-size: 0.75rem; }
 
         .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 24px;
-            background: #141b26;
-            padding: 6px;
-            border-radius: 16px;
-            border: 1px solid #232d3e;
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px;
+            background: #141b26; padding: 6px; border-radius: 16px; border: 1px solid #232d3e;
         }
         .tab-btn {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            background: transparent;
-            color: #8899b4;
-            flex: 0 1 auto;
+            padding: 8px 18px; border: none; border-radius: 12px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: all 0.25s ease; background: transparent;
+            color: #8899b4; flex: 0 1 auto;
         }
-        .tab-btn:hover {
-            color: #d0dcec;
-            background: #1f2a3a;
-        }
+        .tab-btn:hover { color: #d0dcec; background: #1f2a3a; }
         .tab-btn.active {
-            background: #2a3a52;
-            color: #f0f4ff;
+            background: #2a3a52; color: #f0f4ff;
             box-shadow: 0 4px 12px rgba(0, 20, 40, 0.5);
         }
         .tab-btn .badge {
-            display: inline-block;
-            background: #2a3a52;
-            color: #8ab4f8;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 0 8px;
-            border-radius: 20px;
-            margin-left: 6px;
-            line-height: 1.6;
+            display: inline-block; background: #2a3a52; color: #8ab4f8;
+            font-size: 0.6rem; font-weight: 700; padding: 0 8px; border-radius: 20px;
+            margin-left: 6px; line-height: 1.6;
         }
-        .tab-btn.active .badge {
-            background: #3b5a7a;
-            color: #c0d8fc;
-        }
+        .tab-btn.active .badge { background: #3b5a7a; color: #c0d8fc; }
 
-        .tab-panel {
-            display: none;
-            animation: fadeUp 0.3s ease;
-        }
-        .tab-panel.active {
-            display: block;
-        }
+        .tab-panel { display: none; animation: fadeUp 0.3s ease; }
+        .tab-panel.active { display: block; }
         @keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px; margin-bottom: 20px;
         }
         .summary-card {
-            background: #141b26;
-            border: 1px solid #232d3e;
-            border-radius: 12px;
-            padding: 14px 12px;
-            text-align: center;
+            background: #141b26; border: 1px solid #232d3e; border-radius: 12px;
+            padding: 14px 12px; text-align: center;
         }
-        .summary-card .num {
-            font-size: 1.6rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-        .summary-card .num.green {
-            color: #5cd6a2;
-        }
-        .summary-card .num.blue {
-            color: #6fc3ff;
-        }
-        .summary-card .num.orange {
-            color: #f5b06b;
-        }
-        .summary-card .num.pink {
-            color: #f58b9f;
-        }
-        .summary-card .num.purple {
-            color: #b48ad9;
-        }
+        .summary-card .num { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+        .summary-card .num.green { color: #5cd6a2; }
+        .summary-card .num.blue { color: #6fc3ff; }
+        .summary-card .num.orange { color: #f5b06b; }
+        .summary-card .num.pink { color: #f58b9f; }
+        .summary-card .num.purple { color: #b48ad9; }
         .summary-card .lbl {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #7a8aa3;
-            margin-top: 3px;
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.4px;
+            color: #7a8aa3; margin-top: 3px;
         }
 
         .chart-wrap {
-            background: #141b26;
-            border: 1px solid #232d3e;
-            border-radius: 14px;
-            padding: 18px 18px 10px;
-            margin-bottom: 20px;
+            background: #141b26; border: 1px solid #232d3e; border-radius: 14px;
+            padding: 18px 18px 10px; margin-bottom: 20px;
         }
         .chart-wrap .chart-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #7a8aa3;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
+            font-size: 0.75rem; font-weight: 600; color: #7a8aa3;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
         }
-        .chart-wrap canvas {
-            width: 100% !important;
-            max-height: 220px;
-        }
+        .chart-wrap canvas { width: 100% !important; max-height: 220px; }
         .chart-wrap .chart-note {
-            font-size: 0.7rem;
-            color: #5a6a82;
-            text-align: center;
-            margin-top: 4px;
+            font-size: 0.7rem; color: #5a6a82; text-align: center; margin-top: 4px;
         }
 
         .table-wrap {
-            background: #141b26;
-            border: 1px solid #232d3e;
-            border-radius: 14px;
-            overflow: hidden;
+            background: #141b26; border: 1px solid #232d3e; border-radius: 14px; overflow: hidden;
         }
-        .table-wrap .table-scroll {
-            overflow-x: auto;
-            padding: 0 4px 4px 4px;
-        }
+        .table-wrap .table-scroll { overflow-x: auto; padding: 0 4px 4px 4px; }
         .table-wrap table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.82rem;
-            min-width: 460px;
+            width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 460px;
         }
         .table-wrap th {
-            background: #0f151f;
-            color: #7a8aa3;
-            font-weight: 600;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid #232d3e;
-            position: sticky;
-            top: 0;
-            z-index: 2;
+            background: #0f151f; color: #7a8aa3; font-weight: 600; font-size: 0.65rem;
+            text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 12px;
+            text-align: left; border-bottom: 1px solid #232d3e;
+            position: sticky; top: 0; z-index: 2;
         }
         .table-wrap td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #1a212e;
-            color: #d0dcec;
+            padding: 8px 12px; border-bottom: 1px solid #1a212e; color: #d0dcec;
         }
-        .table-wrap tr:last-child td {
-            border-bottom: none;
-        }
-        .table-wrap tr:hover td {
-            background: #1a212e;
-        }
-        .table-wrap .date-col {
-            color: #8ab4f8;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .table-wrap .num-col {
-            font-variant-numeric: tabular-nums;
-            text-align: right;
-        }
-        .table-wrap .pace-col.fast {
-            color: #5cd6a2;
-        }
-        .table-wrap .pace-col.slow {
-            color: #f58b9f;
-        }
+        .table-wrap tr:last-child td { border-bottom: none; }
+        .table-wrap tr:hover td { background: #1a212e; }
+        .table-wrap .date-col { color: #8ab4f8; font-weight: 500; white-space: nowrap; }
+        .table-wrap .num-col { font-variant-numeric: tabular-nums; text-align: right; }
+        .table-wrap .pace-col.fast { color: #5cd6a2; }
+        .table-wrap .pace-col.slow { color: #f58b9f; }
         .table-wrap .delete-btn {
-            background: none;
-            border: none;
-            color: #6a4a4a;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 2px 6px;
-            border-radius: 4px;
+            background: none; border: none; color: #6a4a4a; cursor: pointer;
+            font-size: 1rem; padding: 2px 6px; border-radius: 4px;
             transition: color 0.2s, background 0.2s;
         }
-        .table-wrap .delete-btn:hover {
-            color: #f58b9f;
-            background: #2a1a1a;
-        }
+        .table-wrap .delete-btn:hover { color: #f58b9f; background: #2a1a1a; }
 
-        .empty-state {
-            text-align: center;
-            padding: 30px 20px;
-            color: #5a6a82;
-        }
-        .empty-state .big {
-            font-size: 2rem;
-            margin-bottom: 6px;
-        }
+        .empty-state { text-align: center; padding: 30px 20px; color: #5a6a82; }
+        .empty-state .big { font-size: 2rem; margin-bottom: 6px; }
 
-        .status-bar {
-            font-size: 0.75rem;
-            color: #5a6a82;
-            margin-top: 4px;
-        }
+        .status-bar { font-size: 0.75rem; color: #5a6a82; margin-top: 4px; }
 
-        #excelInput {
-            display: none;
-        }
+        #excelInput { display: none; }
 
         @media (max-width: 800px) {
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px;
-            }
-            .header-stats {
-                justify-content: space-around;
-                gap: 10px;
-            }
-            .add-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .add-form .field input {
-                width: 100%;
-            }
-            .add-form .field input[type="date"] {
-                width: 100%;
-            }
-            .add-form .btn {
-                width: 100%;
-            }
-            .goal-control {
-                width: 100%;
-                justify-content: center;
-            }
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .tab-btn {
-                font-size: 0.75rem;
-                padding: 6px 12px;
-                flex: 1 1 auto;
-                text-align: center;
-            }
+            .header { flex-direction: column; align-items: stretch; padding: 16px; }
+            .header-stats { justify-content: space-around; gap: 10px; }
+            .add-form { flex-direction: column; align-items: stretch; }
+            .add-form .field input { width: 100%; }
+            .add-form .field input[type="date"] { width: 100%; }
+            .add-form .btn { width: 100%; }
+            .goal-control { width: 100%; justify-content: center; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .tab-btn { font-size: 0.75rem; padding: 6px 12px; flex: 1 1 auto; text-align: center; }
         }
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            .header-left h1 {
-                font-size: 1.2rem;
-            }
-            .header-stats .stat .value {
-                font-size: 1rem;
-            }
-            .summary-card .num {
-                font-size: 1.2rem;
-            }
-            .table-wrap table {
-                font-size: 0.7rem;
-                min-width: 340px;
-            }
-            .table-wrap th,
-            .table-wrap td {
-                padding: 6px 8px;
-            }
+            body { padding: 10px; }
+            .header-left h1 { font-size: 1.2rem; }
+            .header-stats .stat .value { font-size: 1rem; }
+            .summary-card .num { font-size: 1.2rem; }
+            .table-wrap table { font-size: 0.7rem; min-width: 340px; }
+            .table-wrap th, .table-wrap td { padding: 6px 8px; }
         }
-        .heatmap-scroll {
-            overflow-x: auto;
-            padding-bottom: 6px;
-        }
-        .heatmap-inner {
-            display: inline-block;
-            min-width: 100%;
-        }
+        .heatmap-scroll { overflow-x: auto; padding-bottom: 6px; }
+        .heatmap-inner { display: inline-block; min-width: 100%; }
         .heatmap-months {
-            display: grid;
-            gap: 3px;
-            margin-left: 32px;
-            margin-bottom: 6px;
-            font-size: 0.65rem;
-            color: #7a8aa3;
+            display: grid; gap: 3px; margin-left: 32px; margin-bottom: 6px;
+            font-size: 0.65rem; color: #7a8aa3;
         }
-        .heatmap-months span {
-            grid-row: 1;
-        }
-        .heatmap-body {
-            display: flex;
-            gap: 6px;
-        }
+        .heatmap-months span { grid-row: 1; }
+        .heatmap-body { display: flex; gap: 6px; }
         .heatmap-days {
-            display: grid;
-            grid-template-rows: repeat(7, 12px);
-            gap: 3px;
-            font-size: 0.6rem;
-            color: #7a8aa3;
+            display: grid; grid-template-rows: repeat(7, 12px); gap: 3px;
+            font-size: 0.6rem; color: #7a8aa3;
         }
-        .heatmap-days span {
-            display: flex;
-            align-items: center;
-            height: 12px;
-        }
+        .heatmap-days span { display: flex; align-items: center; height: 12px; }
         .heatmap-days span:nth-child(1),
         .heatmap-days span:nth-child(3),
         .heatmap-days span:nth-child(5),
-        .heatmap-days span:nth-child(7) {
-            visibility: hidden;
-        }
+        .heatmap-days span:nth-child(7) { visibility: hidden; }
         .heatmap-grid {
-            display: grid;
-            grid-auto-flow: column;
-            grid-template-rows: repeat(7, 12px);
-            gap: 3px;
+            display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px;
         }
         .heatmap-cell {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-            background: #1a212e;
-            transition: transform 0.1s ease;
-            cursor: pointer;
-            position: relative;
+            width: 12px; height: 12px; border-radius: 2px; background: #1a212e;
+            transition: transform 0.1s ease; cursor: pointer; position: relative;
         }
-        .heatmap-cell.out-of-year {
-            opacity: 0.25;
-        }
+        .heatmap-cell.out-of-year { opacity: 0.25; }
         .heatmap-cell.l1 { background: #0e4429; }
         .heatmap-cell.l2 { background: #006d32; }
         .heatmap-cell.l3 { background: #26a641; }
         .heatmap-cell.l4 { background: #39d353; box-shadow: 0 0 6px rgba(57, 211, 83, 0.4); }
         .heatmap-cell:hover {
-            transform: scale(1.5);
-            z-index: 10;
-            outline: 1.5px solid #8ab4f8;
+            transform: scale(1.5); z-index: 10; outline: 1.5px solid #8ab4f8;
         }
         .heatmap-legend {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-            margin-top: 16px;
-            font-size: 0.7rem;
-            color: #7a8aa3;
+            display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+            margin-top: 16px; font-size: 0.7rem; color: #7a8aa3;
         }
-        .heatmap-legend .swatch {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
+        .heatmap-legend .swatch { width: 12px; height: 12px; border-radius: 2px; }
         .heatmap-tooltip {
-            position: fixed;
-            background: rgba(20, 27, 38, 0.97);
-            border: 1px solid #2a3548;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            color: #e8edf5;
-            pointer-events: none;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.12s ease;
-            white-space: nowrap;
+            position: fixed; background: rgba(20, 27, 38, 0.97);
+            border: 1px solid #2a3548; border-radius: 8px; padding: 8px 12px;
+            font-size: 0.75rem; color: #e8edf5; pointer-events: none; z-index: 1000;
+            opacity: 0; transition: opacity 0.12s ease; white-space: nowrap;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         .heatmap-tooltip.visible { opacity: 1; }
@@ -667,137 +321,9 @@
             </div>
         </div>
 
-        <div class="tabs" id="tabNav">
-            <button class="tab-btn active" data-tab="overview">📊 Overview <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="trends">📈 Trends <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="heatmap">🔥 Heatmap <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="jan">Jan <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="febmay">Feb–May <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="jun">Jun <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="jul">Jul <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="aug">Aug <span class="badge">0</span></button>
-            <button class="tab-btn" data-tab="sep">Sep <span class="badge">0</span></button>
-        </div>
-
-        <div id="tabPanels">
-
-            <div class="tab-panel active" id="panel-overview">
-                <div class="summary-grid" id="summary-overview"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">🔥 Calories Burned Per km (by month)</div>
-                    <canvas id="chart-cal-per-km"></canvas>
-                    <div class="chart-note">Lower = more efficient running economy</div>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-overview"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-trends">
-                <div class="chart-wrap">
-                    <div class="chart-title">📏 Distance Over Time</div>
-                    <canvas id="chart-trends-dist"></canvas>
-                    <div class="chart-note">Each point = one run · Dashed line = 3-run rolling average</div>
-                </div>
-                <div class="chart-wrap">
-                    <div class="chart-title">⏱️ Pace Over Time</div>
-                    <canvas id="chart-trends-pace"></canvas>
-                    <div class="chart-note">Dashed line = 3-run rolling average · <span style="color:#f5b06b;">══</span> Goal line</div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-heatmap">
-                <div class="summary-grid" id="summary-heatmap"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">🔥 Activity Heatmap <span id="heatmapYearLabel" style="color:#7a8aa3;font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
-                    <div id="heatmapContent">
-                        <div class="empty-state"><div class="big">🔥</div>No runs to show</div>
-                    </div>
-                    <div class="chart-note">Each cell = one day · Darker = more distance</div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-jan">
-                <div class="summary-grid" id="summary-jan"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-jan"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-jan"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-febmay">
-                <div class="summary-grid" id="summary-febmay"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-febmay"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-febmay"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-jun">
-                <div class="summary-grid" id="summary-jun"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-jun"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-jun"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-jul">
-                <div class="summary-grid" id="summary-jul"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-jul"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-jul"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-aug">
-                <div class="summary-grid" id="summary-aug"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-aug"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-aug"></table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-sep">
-                <div class="summary-grid" id="summary-sep"></div>
-                <div class="chart-wrap">
-                    <div class="chart-title">📊 Distance &amp; Pace</div>
-                    <canvas id="chart-sep"></canvas>
-                </div>
-                <div class="table-wrap">
-                    <div class="table-scroll">
-                        <table id="table-sep"></table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        <!-- Tabs get built dynamically by JS -->
+        <div class="tabs" id="tabNav"></div>
+        <div id="tabPanels"></div>
 
         <footer style="text-align:center;margin-top:24px;font-size:0.7rem;color:#3a4a5e;border-top:1px solid #1a212e;padding-top:16px;">
             🔒 All data stored locally in your browser &bull; Nothing is sent anywhere
@@ -874,24 +400,42 @@ function getMonthKey(dateStr) {
     return new Date(dateStr).getMonth();
 }
 
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+/**
+ * Groups runs into:
+ *   - overview  : all runs (sorted)
+ *   - trends    : all runs (sorted)
+ *   - heatmap   : all runs (sorted)
+ *   - months    : array of { key, label, year, month, runs } sorted chronologically
+ */
 function groupRuns(runs) {
-    const groups = { overview: runs, trends: runs, jan: [], febmay: [], jun: [], jul: [], aug: [], sep: [] };
-    runs.forEach(r => {
-        const m = getMonthKey(r.date);
-        if (m === 0) groups.jan.push(r);
-        else if (m === 1 || m === 3 || m === 4) groups.febmay.push(r);
-        else if (m === 5) groups.jun.push(r);
-        else if (m === 6) groups.jul.push(r);
-        else if (m === 7) groups.aug.push(r);
-        else if (m === 8) groups.sep.push(r);
-    });
-    Object.keys(groups).forEach(k => {
-        if (k !== 'overview' && k !== 'trends') {
-            groups[k].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sorted = [...runs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const groups = { overview: sorted, trends: sorted, heatmap: sorted, months: [] };
+
+    // Group by year-month
+    const buckets = new Map();
+    sorted.forEach(r => {
+        const d = new Date(r.date);
+        if (isNaN(d.getTime())) return;
+        const year = d.getFullYear();
+        const month = d.getMonth();
+        const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+        if (!buckets.has(key)) {
+            buckets.set(key, { key, year, month, runs: [] });
         }
+        buckets.get(key).runs.push(r);
     });
-    groups.overview.sort((a, b) => new Date(a.date) - new Date(b.date));
-    groups.trends.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Sort by date and build friendly labels
+    groups.months = [...buckets.values()]
+        .sort((a, b) => a.key.localeCompare(b.key))
+        .map(b => ({
+            ...b,
+            label: `${MONTH_NAMES[b.month]} ${b.year}`
+        }));
+
     return groups;
 }
 
@@ -932,8 +476,7 @@ function isExcelDate(value) {
 function formatDateLabel(dateStr) {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[d.getMonth()] + ' ' + d.getDate();
+    return MONTH_NAMES[d.getMonth()] + ' ' + d.getDate();
 }
 
 // ── render functions ──
@@ -1392,15 +935,14 @@ function renderCalPerKmChart(runs) {
     const monthMap = {};
     runs.forEach(r => {
         const m = new Date(r.date).getMonth();
-        const label = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m];
-        let key = label;
+        let key = MONTH_NAMES[m];
         if (m === 1 || m === 2 || m === 3 || m === 4) key = 'Feb-May';
         if (!monthMap[key]) monthMap[key] = { totalCal: 0, totalDist: 0 };
         monthMap[key].totalCal += r.energy;
         monthMap[key].totalDist += r.dist;
     });
 
-    const sortedKeys = ['Jan', 'Feb-May', 'Jun', 'Jul', 'Aug', 'Sep'];
+    const sortedKeys = ['Jan', 'Feb-May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const labels = sortedKeys.filter(k => monthMap[k]);
     const calPerKm = labels.map(k => {
         const d = monthMap[k];
@@ -1469,296 +1011,160 @@ function renderCalPerKmChart(runs) {
     });
 }
 
-function buildPanel(panelId, runs, chartId, tableId, summaryId, isMonthly = true) {
-    const stats = calcStats(runs);
-    renderSummary(summaryId, stats);
-    renderTable(tableId, runs, true);
-    if (isMonthly) {
-        setTimeout(() => renderMonthlyChart(chartId, runs), 60);
-    }
-}
+// ═══════════════════════════════════════════════════════
+//  DYNAMIC TABS
+// ═══════════════════════════════════════════════════════
 
-async function refreshDashboard() {
-    const runs = await loadRuns();
-    const groups = groupRuns(runs);
+const FIXED_TABS = [
+    { key: 'overview', label: '📊 Overview' },
+    { key: 'trends',   label: '📈 Trends' },
+    { key: 'heatmap',  label: '🔥 Heatmap' },
+];
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        const tab = btn.dataset.tab;
-        let count = 0;
-        if (tab === 'heatmap') {
-            count = groups.trends ? groups.trends.length : 0;
-        } else {
-            count = groups[tab] ? groups[tab].length : 0;
-        }
-        const badge = btn.querySelector('.badge');
-        if (badge) badge.textContent = count;
+/**
+ * Build the tab bar + panels from the fixed tabs plus one per month.
+ * Safe to call repeatedly — it wipes and rebuilds.
+ */
+function buildTabs(groups) {
+    const nav = document.getElementById('tabNav');
+    const panels = document.getElementById('tabPanels');
+    const currentActive = document.querySelector('.tab-btn.active')?.dataset.tab;
+    const activeKey = currentActive || 'overview';
+
+    // Tab buttons
+    let navHtml = '';
+    FIXED_TABS.forEach(t => {
+        const count = (t.key === 'heatmap') ? groups.heatmap.length : groups[t.key].length;
+        navHtml += `<button class="tab-btn" data-tab="${t.key}">${t.label} <span class="badge">${count}</span></button>`;
+    });
+    groups.months.forEach(m => {
+        navHtml += `<button class="tab-btn" data-tab="month-${m.key}">${m.label} <span class="badge">${m.runs.length}</span></button>`;
+    });
+    nav.innerHTML = navHtml;
+
+    // Panels
+    let panelsHtml = '';
+
+    // Overview
+    panelsHtml += `
+        <div class="tab-panel" id="panel-overview">
+            <div class="summary-grid" id="summary-overview"></div>
+            <div class="chart-wrap">
+                <div class="chart-title">🔥 Calories Burned Per km (by month)</div>
+                <canvas id="chart-cal-per-km"></canvas>
+                <div class="chart-note">Lower = more efficient running economy</div>
+            </div>
+            <div class="table-wrap"><div class="table-scroll"><table id="table-overview"></table></div></div>
+        </div>`;
+
+    // Trends
+    panelsHtml += `
+        <div class="tab-panel" id="panel-trends">
+            <div class="chart-wrap">
+                <div class="chart-title">📏 Distance Over Time</div>
+                <canvas id="chart-trends-dist"></canvas>
+                <div class="chart-note">Each point = one run · Dashed line = 3-run rolling average</div>
+            </div>
+            <div class="chart-wrap">
+                <div class="chart-title">⏱️ Pace Over Time</div>
+                <canvas id="chart-trends-pace"></canvas>
+                <div class="chart-note">Dashed line = 3-run rolling average · <span style="color:#f5b06b;">══</span> Goal line</div>
+            </div>
+        </div>`;
+
+    // Heatmap
+    panelsHtml += `
+        <div class="tab-panel" id="panel-heatmap">
+            <div class="summary-grid" id="summary-heatmap"></div>
+            <div class="chart-wrap">
+                <div class="chart-title">🔥 Activity Heatmap <span id="heatmapYearLabel" style="color:#7a8aa3;font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
+                <div id="heatmapContent">
+                    <div class="empty-state"><div class="big">🔥</div>No runs to show</div>
+                </div>
+                <div class="chart-note">Each cell = one day · Darker = more distance</div>
+            </div>
+        </div>`;
+
+    // One panel per month
+    groups.months.forEach(m => {
+        panelsHtml += `
+            <div class="tab-panel" id="panel-month-${m.key}">
+                <div class="summary-grid" id="summary-month-${m.key}"></div>
+                <div class="chart-wrap">
+                    <div class="chart-title">📊 Distance &amp; Pace — ${m.label}</div>
+                    <canvas id="chart-month-${m.key}"></canvas>
+                </div>
+                <div class="table-wrap"><div class="table-scroll"><table id="table-month-${m.key}"></table></div></div>
+            </div>`;
     });
 
-    updateOverall(runs);
+    panels.innerHTML = panelsHtml;
 
+    // Re-attach click handlers
+    nav.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const tab = this.dataset.tab;
+            nav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            panels.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('panel-' + tab);
+            if (target) target.classList.add('active');
+
+            // Re-render whichever chart(s) that tab owns
+            const runs = await loadRuns();
+            const g = groupRuns(runs);
+
+            if (tab === 'overview') {
+                setTimeout(() => renderCalPerKmChart(g.overview), 50);
+            } else if (tab === 'trends') {
+                setTimeout(() => renderTrendsCharts(g.trends), 50);
+            } else if (tab === 'heatmap') {
+                setTimeout(() => renderHeatmap(g.heatmap), 50);
+            } else if (tab.startsWith('month-')) {
+                const key = tab.slice('month-'.length);
+                const monthGroup = g.months.find(m => m.key === key);
+                if (monthGroup) {
+                    setTimeout(() => renderMonthlyChart('chart-month-' + key, monthGroup.runs), 50);
+                }
+            }
+        });
+    });
+
+    // Activate the previously-active tab if it still exists, else overview
+    const stillExists = nav.querySelector(`.tab-btn[data-tab="${activeKey}"]`);
+    const toActivate = stillExists ? activeKey : 'overview';
+    nav.querySelector(`.tab-btn[data-tab="${toActivate}"]`)?.classList.add('active');
+    document.getElementById('panel-' + toActivate)?.classList.add('active');
+
+    // Fill in the panels' content
     const overviewStats = calcStats(groups.overview);
     renderSummary('summary-overview', overviewStats);
     renderTable('table-overview', groups.overview, true);
     setTimeout(() => renderCalPerKmChart(groups.overview), 60);
 
     setTimeout(() => renderTrendsCharts(groups.trends), 60);
+    setTimeout(() => renderHeatmap(groups.heatmap), 60);
 
-    setTimeout(() => renderHeatmap(groups.trends), 60);
-
-    buildPanel('panel-jan', groups.jan, 'chart-jan', 'table-jan', 'summary-jan');
-    buildPanel('panel-febmay', groups.febmay, 'chart-febmay', 'table-febmay', 'summary-febmay');
-    buildPanel('panel-jun', groups.jun, 'chart-jun', 'table-jun', 'summary-jun');
-    buildPanel('panel-jul', groups.jul, 'chart-jul', 'table-jul', 'summary-jul');
-    buildPanel('panel-aug', groups.aug, 'chart-aug', 'table-aug', 'summary-aug');
-    buildPanel('panel-sep', groups.sep, 'chart-sep', 'table-sep', 'summary-sep');
-}
-
-// ── tab switching ──
-function initTabs() {
-    const buttons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const tab = this.dataset.tab;
-            buttons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            panels.forEach(p => p.classList.remove('active'));
-            const target = document.getElementById('panel-' + tab);
-            if (target) target.classList.add('active');
-
-            const runs = await loadRuns();
-            const groups = groupRuns(runs);
-            if (tab === 'overview') {
-                setTimeout(() => renderCalPerKmChart(groups.overview), 50);
-            } else if (tab === 'trends') {
-                setTimeout(() => renderTrendsCharts(groups.trends), 50);
-            } else if (tab === 'heatmap') {
-                setTimeout(() => renderHeatmap(groups.trends), 50);
-            } else {
-                const chartMap = {
-                    jan: 'chart-jan',
-                    febmay: 'chart-febmay',
-                    jun: 'chart-jun',
-                    jul: 'chart-jul',
-                    aug: 'chart-aug',
-                    sep: 'chart-sep'
-                };
-                const id = chartMap[tab];
-                if (id) {
-                    const canvas = document.getElementById(id);
-                    if (canvas) {
-                        const parent = canvas.parentElement;
-                        const oldMsg = parent.querySelector('.empty-state');
-                        if (oldMsg) oldMsg.remove();
-                    }
-                    setTimeout(() => renderMonthlyChart(id, groups[tab] || []), 50);
-                }
-            }
-        });
+    groups.months.forEach(m => {
+        const stats = calcStats(m.runs);
+        renderSummary('summary-month-' + m.key, stats);
+        renderTable('table-month-' + m.key, m.runs, true);
+        // Only render the chart if this month's panel is actually visible
+        if (toActivate === 'month-' + m.key) {
+            setTimeout(() => renderMonthlyChart('chart-month-' + m.key, m.runs), 60);
+        } else {
+            setTimeout(() => renderMonthlyChart('chart-month-' + m.key, m.runs), 60);
+        }
     });
 }
 
-// ── Add Run ──
-document.getElementById('addRunForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const date = document.getElementById('inputDate').value;
-    const dist = parseFloat(document.getElementById('inputDist').value);
-    const pace = parseFloat(document.getElementById('inputPace').value);
-    const energy = parseFloat(document.getElementById('inputEnergy').value);
-
-    if (!date || isNaN(dist) || isNaN(pace) || isNaN(energy) || dist <= 0 || pace <= 0 || energy <= 0) {
-        alert('Please fill in all fields with valid numbers.');
-        return;
-    }
-
-    const runs = await loadRuns();
-    runs.push({ date, dist, pace, energy, pace5k: pace * 5 });
-    await saveRuns(runs);
-    await refreshDashboard();
-
-    document.getElementById('inputDist').value = '';
-    document.getElementById('inputPace').value = '';
-    document.getElementById('inputEnergy').value = '';
-});
-
-// ── Goal change ──
-document.getElementById('paceGoal').addEventListener('change', async function() {
+async function refreshDashboard() {
     const runs = await loadRuns();
     const groups = groupRuns(runs);
-    renderTrendsCharts(groups.trends);
-});
 
-document.getElementById('paceGoal').addEventListener('input', async function() {
-    const runs = await loadRuns();
-    const groups = groupRuns(runs);
-    renderTrendsCharts(groups.trends);
-});
-
-// ── Export JSON ──
-document.getElementById('btnExport').addEventListener('click', async function() {
-    const runs = await loadRuns();
-    if (!runs.length) {
-        alert('No runs to export!');
-        return;
-    }
-    const blob = new Blob([JSON.stringify(runs, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `run_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-});
-
-// ── Import JSON ──
-document.getElementById('btnImport').addEventListener('click', function() {
-    document.getElementById('fileInput').click();
-});
-
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(ev) {
-        try {
-            const data = JSON.parse(ev.target.result);
-            if (!Array.isArray(data) || !data.length) {
-                alert('Invalid file: expected array of runs.');
-                return;
-            }
-            const first = data[0];
-            if (!first.date || !first.dist || !first.pace || !first.energy) {
-                alert('Invalid format: each run needs date, dist, pace, energy.');
-                return;
-            }
-            if (confirm(`Import ${data.length} runs? This will replace all current data.`)) {
-                await saveRuns(data);
-                await refreshDashboard();
-                alert(`✅ Imported ${data.length} runs successfully!`);
-            }
-        } catch (err) {
-            alert('Error reading file: ' + err.message);
-        }
-    };
-    reader.readAsText(file);
-    this.value = '';
-});
-
-// ── Import EXCEL ──
-document.getElementById('btnExcelImport').addEventListener('click', function() {
-    document.getElementById('excelInput').click();
-});
-
-document.getElementById('excelInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async function(ev) {
-        try {
-            const data = new Uint8Array(ev.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '', header: 1 });
-
-            if (!jsonData || !jsonData.length) {
-                alert('No data found in the Excel file.');
-                return;
-            }
-
-            let headerRowIndex = -1;
-            let headers = [];
-
-            for (let i = 0; i < Math.min(jsonData.length, 10); i++) {
-                const row = jsonData[i];
-                const hasDate = row.some(cell => cell && cell.toString().toLowerCase().includes('date'));
-                const hasDistance = row.some(cell => cell && cell.toString().toLowerCase().includes(
-                    'distance'));
-                const hasPace = row.some(cell => cell && cell.toString().toLowerCase().includes('pace') &&
-                    !cell.toString().toLowerCase().includes('5k'));
-
-                if (hasDate && hasDistance && hasPace) {
-                    headerRowIndex = i;
-                    headers = row.map(h => h ? h.toString().trim() : '');
-                    break;
-                }
-            }
-
-            if (headerRowIndex === -1) {
-                alert('Could not find header row with Date, Distance, and Pace columns.');
-                return;
-            }
-
-            const dateIdx = headers.findIndex(h => h.toLowerCase().includes('date'));
-            const distIdx = headers.findIndex(h => h.toLowerCase().includes('distance'));
-            const paceIdx = headers.findIndex(h => h.toLowerCase().includes('pace') && !h.toLowerCase()
-                .includes('5k'));
-            const energyIdx = headers.findIndex(h => h.toLowerCase().includes('energy') || h.toLowerCase()
-                .includes('cal'));
-            const pace5kIdx = headers.findIndex(h => h.toLowerCase().includes('5k') && h.toLowerCase()
-                .includes('pace'));
-
-            const runs = [];
-            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
-                const row = jsonData[i];
-                if (!row || row.length === 0) continue;
-
-                let date = row[dateIdx] || '';
-                const dist = parseFloat(row[distIdx]) || 0;
-                const pace = parseFloat(row[paceIdx]) || 0;
-                const energy = parseFloat(row[energyIdx]) || 0;
-                let pace5k = parseFloat(row[pace5kIdx]);
-                if (isNaN(pace5k)) pace5k = pace * 5;
-
-                if (typeof date === 'number' && isExcelDate(date)) {
-                    date = excelSerialToDate(date);
-                } else {
-                    let dateStr = date.toString().trim();
-                    if (dateStr.includes(' ')) {
-                        dateStr = dateStr.split(' ')[0];
-                    }
-                    date = dateStr;
-                }
-
-                if (!date || dist <= 0 || pace <= 0) continue;
-
-                runs.push({ date, dist, pace, energy, pace5k });
-            }
-
-            if (!runs.length) {
-                alert('No valid runs found in the Excel file.');
-                return;
-            }
-
-            if (confirm(`Import ${runs.length} runs from Excel? This will replace all current data.`)) {
-                await saveRuns(runs);
-                await refreshDashboard();
-                alert(`✅ Imported ${runs.length} runs successfully!`);
-            }
-
-        } catch (err) {
-            alert('Error reading Excel file: ' + err.message);
-        }
-    };
-    reader.readAsArrayBuffer(file);
-    this.value = '';
-});
-
-// ── Clear All ──
-document.getElementById('btnClearAll').addEventListener('click', async function() {
-    const runs = await loadRuns();
-    if (!runs.length) {
-        alert('No data to clear.');
-        return;
-    }
-    if (confirm(`⚠️ Delete ALL ${runs.length} runs? This cannot be undone!`)) {
-        await saveRuns([]);
-        await refreshDashboard();
-        alert('All data cleared.');
-    }
-});
+    updateOverall(runs);
+    buildTabs(groups);
+}
 
 // ═══════════════════════════════════════════════════════
 //  HEATMAP
@@ -1775,8 +1181,7 @@ function niceDate(key) {
     const [y, m, d] = key.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${days[dt.getDay()]}, ${months[dt.getMonth()]} ${dt.getDate()}`;
+    return `${days[dt.getDay()]}, ${MONTH_NAMES[dt.getMonth()]} ${dt.getDate()}`;
 }
 
 function computeStreaks(activeDays, year) {
@@ -1821,6 +1226,8 @@ function renderHeatmap(runs) {
     const content = document.getElementById('heatmapContent');
     const yearLabel = document.getElementById('heatmapYearLabel');
     const summaryEl = document.getElementById('summary-heatmap');
+
+    if (!content) return;
 
     if (!runs || !runs.length) {
         content.innerHTML = `<div class="empty-state"><div class="big">🔥</div>No runs to show</div>`;
@@ -1879,12 +1286,10 @@ function renderHeatmap(runs) {
         });
     });
 
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
     let monthsHtml = `<div class="heatmap-months" style="grid-template-columns: repeat(${weeks.length}, 12px);">`;
     for (let m = 1; m <= 12; m++) {
         if (m in monthStarts) {
-            monthsHtml += `<span style="grid-column-start: ${monthStarts[m] + 1};">${monthNames[m - 1]}</span>`;
+            monthsHtml += `<span style="grid-column-start: ${monthStarts[m] + 1};">${MONTH_NAMES[m - 1]}</span>`;
         }
     }
     monthsHtml += `</div>`;
@@ -1996,6 +1401,206 @@ function renderHeatmap(runs) {
     }
 }
 
+// ═══════════════════════════════════════════════════════
+//  EVENT WIRING
+// ═══════════════════════════════════════════════════════
+
+// Add Run
+document.getElementById('addRunForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const date = document.getElementById('inputDate').value;
+    const dist = parseFloat(document.getElementById('inputDist').value);
+    const pace = parseFloat(document.getElementById('inputPace').value);
+    const energy = parseFloat(document.getElementById('inputEnergy').value);
+
+    if (!date || isNaN(dist) || isNaN(pace) || isNaN(energy) || dist <= 0 || pace <= 0 || energy <= 0) {
+        alert('Please fill in all fields with valid numbers.');
+        return;
+    }
+
+    const runs = await loadRuns();
+    runs.push({ date, dist, pace, energy, pace5k: pace * 5 });
+    await saveRuns(runs);
+    await refreshDashboard();
+
+    document.getElementById('inputDist').value = '';
+    document.getElementById('inputPace').value = '';
+    document.getElementById('inputEnergy').value = '';
+});
+
+// Goal change
+document.getElementById('paceGoal').addEventListener('change', async function() {
+    const runs = await loadRuns();
+    const groups = groupRuns(runs);
+    renderTrendsCharts(groups.trends);
+});
+
+document.getElementById('paceGoal').addEventListener('input', async function() {
+    const runs = await loadRuns();
+    const groups = groupRuns(runs);
+    renderTrendsCharts(groups.trends);
+});
+
+// Export JSON
+document.getElementById('btnExport').addEventListener('click', async function() {
+    const runs = await loadRuns();
+    if (!runs.length) {
+        alert('No runs to export!');
+        return;
+    }
+    const blob = new Blob([JSON.stringify(runs, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `run_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// Import JSON
+document.getElementById('btnImport').addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+        try {
+            const data = JSON.parse(ev.target.result);
+            if (!Array.isArray(data) || !data.length) {
+                alert('Invalid file: expected array of runs.');
+                return;
+            }
+            const first = data[0];
+            if (!first.date || !first.dist || !first.pace || !first.energy) {
+                alert('Invalid format: each run needs date, dist, pace, energy.');
+                return;
+            }
+            if (confirm(`Import ${data.length} runs? This will replace all current data.`)) {
+                await saveRuns(data);
+                await refreshDashboard();
+                alert(`✅ Imported ${data.length} runs successfully!`);
+            }
+        } catch (err) {
+            alert('Error reading file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    this.value = '';
+});
+
+// Import EXCEL
+document.getElementById('btnExcelImport').addEventListener('click', function() {
+    document.getElementById('excelInput').click();
+});
+
+document.getElementById('excelInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+        try {
+            const data = new Uint8Array(ev.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '', header: 1 });
+
+            if (!jsonData || !jsonData.length) {
+                alert('No data found in the Excel file.');
+                return;
+            }
+
+            let headerRowIndex = -1;
+            let headers = [];
+
+            for (let i = 0; i < Math.min(jsonData.length, 10); i++) {
+                const row = jsonData[i];
+                const hasDate = row.some(cell => cell && cell.toString().toLowerCase().includes('date'));
+                const hasDistance = row.some(cell => cell && cell.toString().toLowerCase().includes('distance'));
+                const hasPace = row.some(cell => cell && cell.toString().toLowerCase().includes('pace') && !cell.toString().toLowerCase().includes('5k'));
+
+                if (hasDate && hasDistance && hasPace) {
+                    headerRowIndex = i;
+                    headers = row.map(h => h ? h.toString().trim() : '');
+                    break;
+                }
+            }
+
+            if (headerRowIndex === -1) {
+                alert('Could not find header row with Date, Distance, and Pace columns.');
+                return;
+            }
+
+            const dateIdx = headers.findIndex(h => h.toLowerCase().includes('date'));
+            const distIdx = headers.findIndex(h => h.toLowerCase().includes('distance'));
+            const paceIdx = headers.findIndex(h => h.toLowerCase().includes('pace') && !h.toLowerCase().includes('5k'));
+            const energyIdx = headers.findIndex(h => h.toLowerCase().includes('energy') || h.toLowerCase().includes('cal'));
+            const pace5kIdx = headers.findIndex(h => h.toLowerCase().includes('5k') && h.toLowerCase().includes('pace'));
+
+            const runs = [];
+            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (!row || row.length === 0) continue;
+
+                let date = row[dateIdx] || '';
+                const dist = parseFloat(row[distIdx]) || 0;
+                const pace = parseFloat(row[paceIdx]) || 0;
+                const energy = parseFloat(row[energyIdx]) || 0;
+                let pace5k = parseFloat(row[pace5kIdx]);
+                if (isNaN(pace5k)) pace5k = pace * 5;
+
+                if (typeof date === 'number' && isExcelDate(date)) {
+                    date = excelSerialToDate(date);
+                } else {
+                    let dateStr = date.toString().trim();
+                    if (dateStr.includes(' ')) {
+                        dateStr = dateStr.split(' ')[0];
+                    }
+                    date = dateStr;
+                }
+
+                if (!date || dist <= 0 || pace <= 0) continue;
+
+                runs.push({ date, dist, pace, energy, pace5k });
+            }
+
+            if (!runs.length) {
+                alert('No valid runs found in the Excel file.');
+                return;
+            }
+
+            if (confirm(`Import ${runs.length} runs from Excel? This will replace all current data.`)) {
+                await saveRuns(runs);
+                await refreshDashboard();
+                alert(`✅ Imported ${runs.length} runs successfully!`);
+            }
+
+        } catch (err) {
+            alert('Error reading Excel file: ' + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    this.value = '';
+});
+
+// Clear All
+document.getElementById('btnClearAll').addEventListener('click', async function() {
+    const runs = await loadRuns();
+    if (!runs.length) {
+        alert('No data to clear.');
+        return;
+    }
+    if (confirm(`⚠️ Delete ALL ${runs.length} runs? This cannot be undone!`)) {
+        await saveRuns([]);
+        await refreshDashboard();
+        alert('All data cleared.');
+    }
+});
+
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async function() {
     const today = new Date().toISOString().slice(0, 10);
@@ -2003,35 +1608,26 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     await migrateLocalDataIfNeeded();
     await refreshDashboard();
-    initTabs();
 
     let resizeTimer;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(async () => {
             const activeTab = document.querySelector('.tab-btn.active');
-            if (activeTab) {
-                const tab = activeTab.dataset.tab;
-                const runs = await loadRuns();
-                const groups = groupRuns(runs);
-                if (tab === 'overview') {
-                    renderCalPerKmChart(groups.overview);
-                } else if (tab === 'trends') {
-                    renderTrendsCharts(groups.trends);
-                } else if (tab === 'heatmap') {
-                    renderHeatmap(groups.trends);
-                } else {
-                    const chartMap = {
-                        jan: 'chart-jan',
-                        febmay: 'chart-febmay',
-                        jun: 'chart-jun',
-                        jul: 'chart-jul',
-                        aug: 'chart-aug',
-                        sep: 'chart-sep'
-                    };
-                    const id = chartMap[tab];
-                    if (id) renderMonthlyChart(id, groups[tab] || []);
-                }
+            if (!activeTab) return;
+            const tab = activeTab.dataset.tab;
+            const runs = await loadRuns();
+            const groups = groupRuns(runs);
+            if (tab === 'overview') {
+                renderCalPerKmChart(groups.overview);
+            } else if (tab === 'trends') {
+                renderTrendsCharts(groups.trends);
+            } else if (tab === 'heatmap') {
+                renderHeatmap(groups.heatmap);
+            } else if (tab.startsWith('month-')) {
+                const key = tab.slice('month-'.length);
+                const monthGroup = groups.months.find(m => m.key === key);
+                if (monthGroup) renderMonthlyChart('chart-month-' + key, monthGroup.runs);
             }
         }, 200);
     });
